@@ -6,37 +6,39 @@
     <title>Dashboard Siak Runners</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-900 text-gray-200 p-4 md:p-8 font-sans antialiased selection:bg-blue-500 selection:text-white">
+<body class="bg-gray-900 text-gray-200 p-4 md:p-8 font-sans antialiased">
     <div class="max-w-5xl mx-auto">
-        
         <div class="mb-8 flex flex-col md:flex-row justify-between items-end border-b border-gray-700 pb-4">
             <div>
                 <h1 class="text-3xl font-bold text-white tracking-wide">SIAK RUNNERS</h1>
-                <p class="text-gray-400">Klasemen Terkini (Berdasarkan Log Aktivitas Terbaru)</p>
+                <p class="text-gray-400">Dashboard Analitik & Leaderboard</p>
             </div>
             <div class="flex gap-6 mt-4 md:mt-0">
-                <div class="text-right">
-                    <p class="text-xs text-gray-500 uppercase font-semibold">Total Pelari</p>
-                    <p id="stat-runners" class="text-xl font-bold text-blue-400">0</p>
-                </div>
-                <div class="text-right">
-                    <p class="text-xs text-gray-500 uppercase font-semibold">Total Jarak</p>
-                    <p id="stat-distance" class="text-xl font-bold text-yellow-400">0 km</p>
-                </div>
+                <div class="text-right"><p class="text-xs text-gray-500 uppercase font-semibold">Total Pelari</p><p id="stat-runners" class="text-xl font-bold text-blue-400">0</p></div>
+                <div class="text-right"><p class="text-xs text-gray-500 uppercase font-semibold">Total Jarak</p><p id="stat-distance" class="text-xl font-bold text-yellow-400">0 km</p></div>
             </div>
         </div>
 
-        <div class="bg-gray-800 p-4 rounded-xl mb-6 flex justify-between items-center border border-gray-700 shadow-lg">
+        <div class="bg-gray-800 p-4 rounded-xl mb-6 flex flex-wrap gap-4 items-center border border-gray-700 shadow-lg">
             <div class="flex items-center gap-3">
-                <label class="text-sm font-medium text-gray-400">Tampilkan Peringkat:</label>
-                <select id="limit-filter" class="bg-gray-700 border border-gray-600 text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2 outline-none cursor-pointer">
-                    <option value="10">Top 10</option>
-                    <option value="30" selected>Top 30</option>
-                    <option value="100">Semua Pelari</option>
+                <label class="text-sm font-medium text-gray-400">Waktu:</label>
+                <select id="time-filter" class="bg-gray-700 border border-gray-600 text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2 outline-none">
+                    <option value="harian">Harian (Hari Ini)</option>
+                    <option value="mingguan">Mingguan (7 Hari Terakhir)</option>
+                    <option value="bulanan" selected>Bulan Ini</option>
+                    <option value="bulan_lalu">Bulan Lalu</option>
                 </select>
             </div>
-            <div class="text-right">
-                <span id="last-update" class="text-xs text-gray-400 bg-gray-700 px-3 py-1 rounded-full">Memuat data...</span>
+            <div class="flex items-center gap-3">
+                <label class="text-sm font-medium text-gray-400">Tampilkan:</label>
+                <select id="limit-filter" class="bg-gray-700 border border-gray-600 text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2 outline-none">
+                    <option value="10">Top 10</option>
+                    <option value="30" selected>Top 30</option>
+                    <option value="100">Semua</option>
+                </select>
+            </div>
+            <div class="ml-auto">
+                <span id="last-update" class="text-xs text-gray-400">Memuat data database...</span>
             </div>
         </div>
 
@@ -52,7 +54,7 @@
                         </tr>
                     </thead>
                     <tbody id="leaderboard-body" class="divide-y divide-gray-700/50">
-                        <tr><td colspan="4" class="text-center py-12 text-gray-500">Menarik aktivitas terbaru dari Strava...</td></tr>
+                        <tr><td colspan="4" class="text-center py-12 text-gray-500">Menghubungkan ke Database Siak Runners...</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -60,11 +62,12 @@
     </div>
 
     <script>
-        // MASUKKAN URL GOOGLE APPS SCRIPT ANDA DI SINI
-        const API_URL = 'https://script.google.com/macros/s/AKfycbwFI-j0wzL0w3Nqg1RND0MEiZGfyauAcJzCFQGPqZnMxbXVdSFN7QFplXTugVrfCeQW/exec';
+        // MASUKKAN URL GOOGLE APPS SCRIPT DATABASE ANDA DI SINI
+        const API_URL = 'https://script.google.com/macros/s/AKfycbzRYGypiA-GSOwv62s_u6DjPfm30xGy4zBMI1dXe_9QI3RvbyYQG8WeE1STsHbrYWJ8/exec';
         
         let globalRawData = []; 
 
+        document.getElementById('time-filter').addEventListener('change', processData);
         document.getElementById('limit-filter').addEventListener('change', processData);
 
         async function fetchStravaData() {
@@ -73,57 +76,70 @@
                 const result = await response.json();
                 
                 if (result.status === "error") throw new Error(result.message);
-                
                 globalRawData = result.data;
-                document.getElementById('last-update').innerText = "Sinkronisasi: " + new Date().toLocaleTimeString('id-ID');
+                document.getElementById('last-update').innerText = "Tersinkronisasi";
                 processData(); 
             } catch (error) {
-                document.getElementById('leaderboard-body').innerHTML = `<tr><td colspan="4" class="text-center py-10 text-red-400">Gagal memuat data: ${error.message}</td></tr>`;
+                document.getElementById('leaderboard-body').innerHTML = `<tr><td colspan="4" class="text-center py-10 text-red-400">Gagal terhubung ke Database.</td></tr>`;
             }
         }
 
         function processData() {
+            const timeFilter = document.getElementById('time-filter').value;
             const limit = parseInt(document.getElementById('limit-filter').value);
+            const now = new Date();
+            
+            // LOGIKA FILTER WAKTU LENGKAP
+            let filteredActivities = globalRawData.filter(activity => {
+                const actDate = new Date(activity.date);
+                if (timeFilter === 'harian') {
+                    return actDate.toDateString() === now.toDateString();
+                } else if (timeFilter === 'mingguan') {
+                    const sevenDaysAgo = new Date(now.getTime() - (7 * 24 * 60 * 60 * 1000));
+                    return actDate >= sevenDaysAgo;
+                } else if (timeFilter === 'bulanan') {
+                    return actDate.getMonth() === now.getMonth() && actDate.getFullYear() === now.getFullYear();
+                } else if (timeFilter === 'bulan_lalu') {
+                    let lastMonth = now.getMonth() - 1;
+                    let year = now.getFullYear();
+                    if (lastMonth < 0) { lastMonth = 11; year -= 1; }
+                    return actDate.getMonth() === lastMonth && actDate.getFullYear() === year;
+                }
+                return false; 
+            });
 
-            // Karena API Strava Klub tidak mengirimkan tanggal, kita gunakan SEMUA data mentah (hingga 200 lari terakhir)
             let leaderboard = {};
             let totalOverallDistance = 0;
 
-            globalRawData.forEach(act => {
-                if (!leaderboard[act.name]) {
-                    leaderboard[act.name] = { name: act.name, distance: 0, runs: 0 };
-                }
+            filteredActivities.forEach(act => {
+                if (!leaderboard[act.name]) { leaderboard[act.name] = { name: act.name, distance: 0, runs: 0 }; }
                 leaderboard[act.name].distance += act.distance;
                 leaderboard[act.name].runs += 1;
                 totalOverallDistance += act.distance;
             });
 
-            // Sorting dari jarak terjauh & Batasi jumlah yang tampil
             const sortedRunners = Object.keys(leaderboard)
                 .map(key => leaderboard[key])
                 .sort((a, b) => b.distance - a.distance)
                 .slice(0, limit);
 
-            // Update Angka di Header
             document.getElementById('stat-runners').innerText = sortedRunners.length;
             document.getElementById('stat-distance').innerText = totalOverallDistance.toFixed(1) + " km";
 
-            // Render ke dalam Tabel
             const tbody = document.getElementById('leaderboard-body');
             tbody.innerHTML = '';
 
             if (sortedRunners.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="4" class="text-center py-12 text-gray-500">Tidak ada log aktivitas di klub saat ini.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="4" class="text-center py-12 text-gray-500">Tidak ada aktivitas pada periode yang dipilih.</td></tr>`;
                 return;
             }
 
             sortedRunners.forEach((runner, index) => {
                 let rank = index + 1;
                 let rankVisual = `<span class="text-gray-400 font-bold">${rank}</span>`;
-                
-                if (rank === 1) rankVisual = `<span class="text-xl" title="Juara 1">🥇</span>`;
-                if (rank === 2) rankVisual = `<span class="text-xl" title="Juara 2">🥈</span>`;
-                if (rank === 3) rankVisual = `<span class="text-xl" title="Juara 3">🥉</span>`;
+                if (rank === 1) rankVisual = `<span class="text-xl">🥇</span>`;
+                if (rank === 2) rankVisual = `<span class="text-xl">🥈</span>`;
+                if (rank === 3) rankVisual = `<span class="text-xl">🥉</span>`;
 
                 tbody.innerHTML += `
                     <tr class="hover:bg-gray-700/50 transition-colors">
