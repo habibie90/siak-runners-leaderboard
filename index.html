@@ -3,84 +3,173 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Siak Runners - Top 30 Leaderboard</title>
+    <title>Dashboard Siak Runners</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-slate-50 p-4 md:p-8 antialiased">
-    <div class="max-w-4xl mx-auto bg-white shadow-xl rounded-2xl overflow-hidden border border-slate-100">
-        <div class="bg-gradient-to-r from-blue-700 to-blue-500 text-white text-center py-8 px-4">
-            <h1 class="text-4xl font-extrabold uppercase tracking-widest drop-shadow-md">SIAK RUNNERS</h1>
-            <p id="month-title" class="text-blue-100 mt-2 font-medium text-lg">Top 30 Leaderboard &bull; Memuat...</p>
-        </div>
+<body class="bg-gray-900 text-gray-200 p-4 md:p-8 font-sans antialiased selection:bg-blue-500 selection:text-white">
+    <div class="max-w-5xl mx-auto">
         
-        <div class="overflow-x-auto">
-            <table class="w-full text-sm text-left">
-                <thead class="bg-slate-50 uppercase font-bold text-slate-500 text-xs tracking-wider border-b border-slate-200">
-                    <tr>
-                        <th class="px-6 py-4 text-center w-16">Rank</th>
-                        <th class="px-6 py-4">Nama Pelari</th>
-                        <th class="px-6 py-4 text-right">Jarak (KM)</th>
-                        <th class="px-6 py-4 text-center">Total Lari</th>
-                    </tr>
-                </thead>
-                <tbody id="leaderboard-body" class="divide-y divide-slate-100">
-                    <tr><td colspan="4" class="text-center py-10 text-slate-500">Mengambil data terbaru dari Strava...</td></tr>
-                </tbody>
-            </table>
+        <div class="mb-8 flex flex-col md:flex-row justify-between items-end border-b border-gray-700 pb-4">
+            <div>
+                <h1 class="text-3xl font-bold text-white tracking-wide">SIAK RUNNERS</h1>
+                <p class="text-gray-400">Dashboard Analitik & Leaderboard</p>
+            </div>
+            <div class="flex gap-6 mt-4 md:mt-0">
+                <div class="text-right">
+                    <p class="text-xs text-gray-500 uppercase font-semibold">Total Pelari</p>
+                    <p id="stat-runners" class="text-xl font-bold text-blue-400">0</p>
+                </div>
+                <div class="text-right">
+                    <p class="text-xs text-gray-500 uppercase font-semibold">Total Jarak</p>
+                    <p id="stat-distance" class="text-xl font-bold text-yellow-400">0 km</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-gray-800 p-4 rounded-xl mb-6 flex flex-wrap gap-4 items-center border border-gray-700 shadow-lg">
+            <div class="flex items-center gap-3">
+                <label class="text-sm font-medium text-gray-400">Penyaringan Waktu:</label>
+                <select id="time-filter" class="bg-gray-700 border border-gray-600 text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2 outline-none cursor-pointer">
+                    <option value="harian">Harian (Hari Ini)</option>
+                    <option value="mingguan">Mingguan (7 Hari Terakhir)</option>
+                    <option value="bulanan" selected>Bulanan (Bulan Ini)</option>
+                </select>
+            </div>
+            <div class="flex items-center gap-3">
+                <label class="text-sm font-medium text-gray-400">Tampilkan:</label>
+                <select id="limit-filter" class="bg-gray-700 border border-gray-600 text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2 outline-none cursor-pointer">
+                    <option value="10">Top 10</option>
+                    <option value="30" selected>Top 30</option>
+                    <option value="100">Semua</option>
+                </select>
+            </div>
+            <div class="ml-auto">
+                <span id="last-update" class="text-xs text-gray-500">Memuat data...</span>
+            </div>
+        </div>
+
+        <div class="bg-gray-800 rounded-xl overflow-hidden border border-gray-700 shadow-xl">
+            <div class="bg-gray-850 px-6 py-4 border-b border-gray-700 flex justify-between items-center">
+                <h2 class="text-lg font-bold text-white">Klasemen Akhir</h2>
+                <span id="period-label" class="text-xs font-semibold px-2 py-1 bg-blue-900/50 text-blue-300 rounded">Bulan Ini</span>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm text-left">
+                    <thead class="bg-gray-800 text-gray-400 uppercase text-xs tracking-wider border-b border-gray-700">
+                        <tr>
+                            <th class="px-6 py-4 text-center w-16">Pos</th>
+                            <th class="px-6 py-4">Nama Pelari</th>
+                            <th class="px-6 py-4 text-right">Total Jarak</th>
+                            <th class="px-6 py-4 text-center">Aktivitas</th>
+                        </tr>
+                    </thead>
+                    <tbody id="leaderboard-body" class="divide-y divide-gray-700/50">
+                        <tr><td colspan="4" class="text-center py-12 text-gray-500">Menarik data dari Strava...</td></tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 
     <script>
         // MASUKKAN URL GOOGLE APPS SCRIPT ANDA DI SINI
         const API_URL = 'https://script.google.com/macros/s/AKfycbxXj0BB-7p42c4BVLulX6d0LAICJV5_vgmRt5OojO7xwOccz0IEGFjCgR7gMlcu76PHFw/exec';
+        
+        let globalRawData = []; 
 
-        const months = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
-        const now = new Date();
-        document.getElementById('month-title').innerHTML = `Top 30 Leaderboard &bull; ${months[now.getMonth()]} ${now.getFullYear()}`;
+        document.getElementById('time-filter').addEventListener('change', processData);
+        document.getElementById('limit-filter').addEventListener('change', processData);
 
-        async function fetchLeaderboard() {
+        async function fetchStravaData() {
             try {
                 const response = await fetch(API_URL);
                 const result = await response.json();
                 
-                const tbody = document.getElementById('leaderboard-body');
-                tbody.innerHTML = ''; // Bersihkan tabel
-
-                if (result.status === "error") {
-                    tbody.innerHTML = `<tr><td colspan="4" class="text-center py-10 text-red-500">Error: ${result.message}</td></tr>`;
-                    return;
-                }
-
-                if (result.data.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="4" class="text-center py-10 text-slate-500">Belum ada data aktivitas lari bulan ini.</td></tr>`;
-                    return;
-                }
-
-                result.data.forEach((runner, index) => {
-                    let rank = index + 1;
-                    let rankStyle = "text-slate-500 font-semibold";
-                    let rowBg = "hover:bg-slate-50 transition-colors";
-                    
-                    if (rank === 1) { rankStyle = "bg-yellow-400 text-yellow-900 w-8 h-8 rounded-full flex items-center justify-center mx-auto shadow-sm font-bold"; rowBg = "bg-yellow-50/30 hover:bg-yellow-50"; }
-                    else if (rank === 2) { rankStyle = "bg-slate-200 text-slate-800 w-8 h-8 rounded-full flex items-center justify-center mx-auto shadow-sm font-bold"; rowBg = "bg-slate-50/50 hover:bg-slate-50"; }
-                    else if (rank === 3) { rankStyle = "bg-orange-300 text-orange-900 w-8 h-8 rounded-full flex items-center justify-center mx-auto shadow-sm font-bold"; rowBg = "bg-orange-50/30 hover:bg-orange-50"; }
-
-                    tbody.innerHTML += `
-                        <tr class="${rowBg}">
-                            <td class="px-6 py-4 whitespace-nowrap text-center"><div class="${rankStyle}">${rank}</div></td>
-                            <td class="px-6 py-4 whitespace-nowrap font-medium text-slate-800 text-base">${runner.name}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-right"><span class="text-blue-600 font-bold text-lg">${runner.distance.toFixed(2)}</span></td>
-                            <td class="px-6 py-4 whitespace-nowrap text-center text-slate-600 font-medium">${runner.runs}x</td>
-                        </tr>
-                    `;
-                });
+                if (result.status === "error") throw new Error(result.message);
+                
+                globalRawData = result.data;
+                document.getElementById('last-update').innerText = "Update: " + new Date().toLocaleTimeString('id-ID');
+                processData(); 
             } catch (error) {
-                document.getElementById('leaderboard-body').innerHTML = `<tr><td colspan="4" class="text-center py-10 text-red-500">Gagal terhubung ke server.</td></tr>`;
+                document.getElementById('leaderboard-body').innerHTML = `<tr><td colspan="4" class="text-center py-10 text-red-400">Gagal memuat data: ${error.message}</td></tr>`;
             }
         }
 
-        // Panggil fungsi saat halaman dimuat
-        fetchLeaderboard();
+        function processData() {
+            const timeFilter = document.getElementById('time-filter').value;
+            const limit = parseInt(document.getElementById('limit-filter').value);
+            const now = new Date();
+            
+            // Update Label
+            const labels = { 'harian': 'Hari Ini', 'mingguan': '7 Hari Terakhir', 'bulanan': 'Bulan Ini' };
+            document.getElementById('period-label').innerText = labels[timeFilter];
+
+            // LOGIKA FILTER YANG SUDAH DIPERBARUI
+            let filteredActivities = globalRawData.filter(activity => {
+                const actDate = new Date(activity.date);
+                if (timeFilter === 'harian') {
+                    return actDate.toDateString() === now.toDateString();
+                } else if (timeFilter === 'mingguan') {
+                    const sevenDaysAgo = new Date(now.getTime() - (7 * 24 * 60 * 60 * 1000));
+                    return actDate >= sevenDaysAgo;
+                } else if (timeFilter === 'bulanan') {
+                    return actDate.getMonth() === now.getMonth() && actDate.getFullYear() === now.getFullYear();
+                }
+                return false; 
+            });
+
+            // Agregasi
+            let leaderboard = {};
+            let totalOverallDistance = 0;
+
+            filteredActivities.forEach(act => {
+                if (!leaderboard[act.name]) {
+                    leaderboard[act.name] = { name: act.name, distance: 0, runs: 0 };
+                }
+                leaderboard[act.name].distance += act.distance;
+                leaderboard[act.name].runs += 1;
+                totalOverallDistance += act.distance;
+            });
+
+            // Sorting & Limit
+            const sortedRunners = Object.keys(leaderboard)
+                .map(key => leaderboard[key])
+                .sort((a, b) => b.distance - a.distance)
+                .slice(0, limit);
+
+            // Update UI Stats
+            document.getElementById('stat-runners').innerText = sortedRunners.length;
+            document.getElementById('stat-distance').innerText = totalOverallDistance.toFixed(1) + " km";
+
+            // Render Tabel
+            const tbody = document.getElementById('leaderboard-body');
+            tbody.innerHTML = '';
+
+            if (sortedRunners.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" class="text-center py-12 text-gray-500">Tidak ada aktivitas lari pada periode ini.</td></tr>`;
+                return;
+            }
+
+            sortedRunners.forEach((runner, index) => {
+                let rank = index + 1;
+                let rankVisual = `<span class="text-gray-400 font-bold">${rank}</span>`;
+                
+                if (rank === 1) rankVisual = `<span class="text-xl" title="Juara 1">🥇</span>`;
+                if (rank === 2) rankVisual = `<span class="text-xl" title="Juara 2">🥈</span>`;
+                if (rank === 3) rankVisual = `<span class="text-xl" title="Juara 3">🥉</span>`;
+
+                tbody.innerHTML += `
+                    <tr class="hover:bg-gray-700/50 transition-colors">
+                        <td class="px-6 py-4 text-center">${rankVisual}</td>
+                        <td class="px-6 py-4 font-medium text-gray-100">${runner.name}</td>
+                        <td class="px-6 py-4 text-right text-blue-400 font-bold tracking-wide">${runner.distance.toFixed(2)}</td>
+                        <td class="px-6 py-4 text-center text-gray-400">${runner.runs}</td>
+                    </tr>
+                `;
+            });
+        }
+
+        fetchStravaData();
     </script>
 </body>
 </html>
