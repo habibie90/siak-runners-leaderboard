@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Siak Runners - Top 30 Leaderboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-50 p-4 md:p-8 antialiased">
+    <div class="max-w-4xl mx-auto bg-white shadow-xl rounded-2xl overflow-hidden border border-slate-100">
+        <div class="bg-gradient-to-r from-blue-700 to-blue-500 text-white text-center py-8 px-4">
+            <h1 class="text-4xl font-extrabold uppercase tracking-widest drop-shadow-md">SIAK RUNNERS</h1>
+            <p id="month-title" class="text-blue-100 mt-2 font-medium text-lg">Top 30 Leaderboard &bull; Memuat...</p>
+        </div>
+        
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm text-left">
+                <thead class="bg-slate-50 uppercase font-bold text-slate-500 text-xs tracking-wider border-b border-slate-200">
+                    <tr>
+                        <th class="px-6 py-4 text-center w-16">Rank</th>
+                        <th class="px-6 py-4">Nama Pelari</th>
+                        <th class="px-6 py-4 text-right">Jarak (KM)</th>
+                        <th class="px-6 py-4 text-center">Total Lari</th>
+                    </tr>
+                </thead>
+                <tbody id="leaderboard-body" class="divide-y divide-slate-100">
+                    <tr><td colspan="4" class="text-center py-10 text-slate-500">Mengambil data terbaru dari Strava...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        // MASUKKAN URL GOOGLE APPS SCRIPT ANDA DI SINI
+        const API_URL = 'https://script.google.com/macros/s/AKfycbxXj0BB-7p42c4BVLulX6d0LAICJV5_vgmRt5OojO7xwOccz0IEGFjCgR7gMlcu76PHFw/exec';
+
+        const months = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+        const now = new Date();
+        document.getElementById('month-title').innerHTML = `Top 30 Leaderboard &bull; ${months[now.getMonth()]} ${now.getFullYear()}`;
+
+        async function fetchLeaderboard() {
+            try {
+                const response = await fetch(API_URL);
+                const result = await response.json();
+                
+                const tbody = document.getElementById('leaderboard-body');
+                tbody.innerHTML = ''; // Bersihkan tabel
+
+                if (result.status === "error") {
+                    tbody.innerHTML = `<tr><td colspan="4" class="text-center py-10 text-red-500">Error: ${result.message}</td></tr>`;
+                    return;
+                }
+
+                if (result.data.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="4" class="text-center py-10 text-slate-500">Belum ada data aktivitas lari bulan ini.</td></tr>`;
+                    return;
+                }
+
+                result.data.forEach((runner, index) => {
+                    let rank = index + 1;
+                    let rankStyle = "text-slate-500 font-semibold";
+                    let rowBg = "hover:bg-slate-50 transition-colors";
+                    
+                    if (rank === 1) { rankStyle = "bg-yellow-400 text-yellow-900 w-8 h-8 rounded-full flex items-center justify-center mx-auto shadow-sm font-bold"; rowBg = "bg-yellow-50/30 hover:bg-yellow-50"; }
+                    else if (rank === 2) { rankStyle = "bg-slate-200 text-slate-800 w-8 h-8 rounded-full flex items-center justify-center mx-auto shadow-sm font-bold"; rowBg = "bg-slate-50/50 hover:bg-slate-50"; }
+                    else if (rank === 3) { rankStyle = "bg-orange-300 text-orange-900 w-8 h-8 rounded-full flex items-center justify-center mx-auto shadow-sm font-bold"; rowBg = "bg-orange-50/30 hover:bg-orange-50"; }
+
+                    tbody.innerHTML += `
+                        <tr class="${rowBg}">
+                            <td class="px-6 py-4 whitespace-nowrap text-center"><div class="${rankStyle}">${rank}</div></td>
+                            <td class="px-6 py-4 whitespace-nowrap font-medium text-slate-800 text-base">${runner.name}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-right"><span class="text-blue-600 font-bold text-lg">${runner.distance.toFixed(2)}</span></td>
+                            <td class="px-6 py-4 whitespace-nowrap text-center text-slate-600 font-medium">${runner.runs}x</td>
+                        </tr>
+                    `;
+                });
+            } catch (error) {
+                document.getElementById('leaderboard-body').innerHTML = `<tr><td colspan="4" class="text-center py-10 text-red-500">Gagal terhubung ke server.</td></tr>`;
+            }
+        }
+
+        // Panggil fungsi saat halaman dimuat
+        fetchLeaderboard();
+    </script>
+</body>
+</html>
