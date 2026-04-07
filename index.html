@@ -5,73 +5,125 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Leaderboard Siak Runners</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Animasi Latar Belakang Bergerak */
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        .animated-bg {
+            background: linear-gradient(-45deg, #0f172a, #1e3a8a, #0f172a, #312e81);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+            min-height: 100vh;
+        }
+
+        /* Animasi Kaca (Glassmorphism) */
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+
+        /* Animasi Teks Bersinar (Shine) */
+        .text-shine {
+            background: linear-gradient(to right, #60a5fa 20%, #ffffff 40%, #ffffff 60%, #60a5fa 80%);
+            background-size: 200% auto;
+            color: #000;
+            background-clip: text;
+            text-fill-color: transparent;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: shine 3s linear infinite;
+        }
+        @keyframes shine { to { background-position: 200% center; } }
+
+        /* Animasi Muncul Bertahap untuk Tabel (Staggered Fade In) */
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .fade-in-row {
+            animation: fadeInUp 0.5s ease forwards;
+            opacity: 0; /* Mulai dari tersembunyi */
+        }
+    </style>
 </head>
-<body class="bg-gray-900 text-gray-200 p-4 md:p-8 font-sans antialiased selection:bg-blue-500 selection:text-white">
+<body class="animated-bg text-gray-200 p-4 md:p-8 font-sans antialiased selection:bg-blue-500 selection:text-white">
     <div class="max-w-5xl mx-auto">
         
-        <div class="mb-8 flex flex-col md:flex-row justify-between items-center border-b border-gray-700 pb-6 gap-6">
-            
-            <div class="flex flex-row items-center gap-4 w-full md:w-auto">
-                <div class="p-2 bg-white rounded-xl shadow-lg shrink-0 flex items-center justify-center">
+        <div class="glass-panel rounded-2xl mb-8 flex flex-col md:flex-row justify-between items-center p-6 gap-6 transition-all duration-300 hover:shadow-blue-900/20 hover:shadow-2xl">
+            <div class="flex flex-row items-center gap-5 w-full md:w-auto">
+                <div class="p-2 bg-white/90 backdrop-blur-md rounded-xl shadow-lg shrink-0 flex items-center justify-center transform transition hover:scale-105">
                     <img src="Logo SR.jpeg" alt="Logo SIAK RUNNERS" class="h-16 md:h-20 rounded object-contain" />
                 </div>
                 <div class="flex flex-col justify-center">
-                    <h1 class="text-2xl md:text-4xl font-extrabold text-white tracking-wider uppercase leading-tight drop-shadow-md">
+                    <h1 class="text-2xl md:text-4xl font-extrabold tracking-wider uppercase leading-tight drop-shadow-md">
                         LEADERBOARD<br />
-                        <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-blue-500">SIAK RUNNERS</span>
+                        <span class="text-shine">SIAK RUNNERS</span>
                     </h1>
                 </div>
             </div>
             
-            <div class="flex gap-6 w-full md:w-auto justify-start md:justify-end border-t md:border-t-0 border-gray-700 pt-4 md:pt-0">
-                <div class="text-left md:text-right">
-                    <p class="text-xs text-gray-500 uppercase font-semibold">Total Pelari</p>
-                    <p id="stat-runners" class="text-xl font-bold text-blue-400">0</p>
+            <div class="flex gap-8 w-full md:w-auto justify-start md:justify-end border-t md:border-t-0 border-gray-600 pt-4 md:pt-0">
+                <div class="text-left md:text-right transform transition hover:scale-105">
+                    <p class="text-xs text-blue-300 uppercase font-bold tracking-wider mb-1">Total Pelari</p>
+                    <p id="stat-runners" class="text-3xl font-black text-white drop-shadow-lg">0</p>
                 </div>
-                <div class="text-left md:text-right">
-                    <p class="text-xs text-gray-500 uppercase font-semibold">Total Jarak</p>
-                    <p id="stat-distance" class="text-xl font-bold text-yellow-400">0 km</p>
+                <div class="text-left md:text-right transform transition hover:scale-105">
+                    <p class="text-xs text-yellow-300 uppercase font-bold tracking-wider mb-1">Total Jarak</p>
+                    <p id="stat-distance" class="text-3xl font-black text-white drop-shadow-lg">0 <span class="text-lg">km</span></p>
                 </div>
             </div>
         </div>
 
-        <div class="bg-gray-800 p-4 rounded-xl mb-6 flex flex-wrap gap-4 items-center border border-gray-700 shadow-lg">
+        <div class="glass-panel p-5 rounded-2xl mb-6 flex flex-wrap gap-5 items-center">
             <div class="flex items-center gap-3">
-                <label class="text-sm font-medium text-gray-400">Pilih Periode:</label>
-                <select id="time-filter" class="bg-gray-700 border border-gray-600 text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2 outline-none cursor-pointer min-w-[150px]">
+                <label class="text-sm font-bold text-gray-300 uppercase tracking-wide">Pilih Periode:</label>
+                <select id="time-filter" class="bg-gray-800/80 border border-blue-500/30 text-white text-sm rounded-xl focus:ring-blue-500 focus:border-blue-500 block p-2.5 outline-none cursor-pointer min-w-[160px] transition hover:bg-gray-700/80">
                     <option value="">Memuat periode...</option>
                 </select>
             </div>
             <div class="flex items-center gap-3">
-                <label class="text-sm font-medium text-gray-400">Tampilkan:</label>
-                <select id="limit-filter" class="bg-gray-700 border border-gray-600 text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2 outline-none cursor-pointer">
+                <label class="text-sm font-bold text-gray-300 uppercase tracking-wide">Tampilkan:</label>
+                <select id="limit-filter" class="bg-gray-800/80 border border-blue-500/30 text-white text-sm rounded-xl focus:ring-blue-500 focus:border-blue-500 block p-2.5 outline-none cursor-pointer transition hover:bg-gray-700/80">
                     <option value="10">Top 10</option>
                     <option value="30" selected>Top 30</option>
                     <option value="100">Semua</option>
                 </select>
             </div>
-            <div class="ml-auto">
-                <span id="last-update" class="text-xs text-gray-400 bg-gray-700 px-3 py-1 rounded-full">Menghubungkan ke Database...</span>
+            <div class="ml-auto flex items-center gap-2">
+                <span class="relative flex h-3 w-3">
+                  <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+                  <span class="relative inline-flex rounded-full h-3 w-3 bg-blue-500"></span>
+                </span>
+                <span id="last-update" class="text-xs font-medium text-blue-200">Menghubungkan ke Database...</span>
             </div>
         </div>
 
-        <div class="bg-gray-800 rounded-xl overflow-hidden border border-gray-700 shadow-xl">
-            <div class="bg-gray-850 px-6 py-4 border-b border-gray-700 flex justify-between items-center">
-                <h2 class="text-lg font-bold text-white uppercase tracking-wider">Klasemen Akhir</h2>
-                <span id="period-label" class="text-xs font-bold px-2 py-1 bg-blue-900/80 text-blue-200 rounded uppercase">Memuat...</span>
+        <div class="glass-panel rounded-2xl overflow-hidden shadow-2xl">
+            <div class="bg-gray-800/50 px-6 py-5 border-b border-gray-700/50 flex justify-between items-center">
+                <h2 class="text-xl font-black text-white uppercase tracking-widest flex items-center gap-2">
+                    <svg class="w-6 h-6 text-yellow-400" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>
+                    Klasemen Resmi
+                </h2>
+                <span id="period-label" class="text-xs font-extrabold px-3 py-1.5 bg-blue-600 text-white rounded-lg uppercase shadow-lg shadow-blue-500/30">Memuat...</span>
             </div>
             <div class="overflow-x-auto">
                 <table class="w-full text-sm text-left">
-                    <thead class="bg-gray-800 text-gray-400 uppercase text-xs tracking-wider border-b border-gray-700">
+                    <thead class="bg-gray-900/40 text-gray-400 uppercase text-xs tracking-widest border-b border-gray-700/50">
                         <tr>
-                            <th class="px-6 py-4 text-center w-16">Pos</th>
-                            <th class="px-6 py-4">Nama Pelari</th>
-                            <th class="px-6 py-4 text-right">Total Jarak</th>
-                            <th class="px-6 py-4 text-center">Aktivitas</th>
+                            <th class="px-6 py-5 text-center w-20 font-bold">Pos</th>
+                            <th class="px-6 py-5 font-bold">Nama Pelari</th>
+                            <th class="px-6 py-5 text-right font-bold">Total Jarak</th>
+                            <th class="px-6 py-5 text-center font-bold">Aktivitas</th>
                         </tr>
                     </thead>
-                    <tbody id="leaderboard-body" class="divide-y divide-gray-700/50">
-                        <tr><td colspan="4" class="text-center py-12 text-gray-500">Mengambil data lari...</td></tr>
+                    <tbody id="leaderboard-body" class="divide-y divide-gray-700/30">
+                        <tr><td colspan="4" class="text-center py-16 text-gray-400 font-medium">Sedang mengambil log lari...</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -80,14 +132,13 @@
 
     <script>
         // MASUKKAN KEMBALI URL GOOGLE APPS SCRIPT SPREADSHEET (DATABASE) ANDA DI SINI
-        const API_URL = 'https://script.google.com/macros/s/AKfycbzRYGypiA-GSOwv62s_u6DjPfm30xGy4zBMI1dXe_9QI3RvbyYQG8WeE1STsHbrYWJ8/exec';
+        const API_URL = 'https://script.google.com/macros/s/AKfycbzof1aN52UyT2vP6dOWQXLywQnoTb12otLvvWnveEZ8RwMZ5gkyiAsCZ9sTOdPMLr55/exec';
         
         let globalRawData = []; 
 
         document.getElementById('time-filter').addEventListener('change', processData);
         document.getElementById('limit-filter').addEventListener('change', processData);
 
-        // Fungsi untuk mengambil data dari API Apps Script
         async function fetchStravaData() {
             try {
                 const response = await fetch(API_URL);
@@ -96,34 +147,32 @@
                 if (result.status === "error") throw new Error(result.message);
                 
                 globalRawData = result.data;
-                document.getElementById('last-update').innerText = "Data Ter-update: " + new Date().toLocaleTimeString('id-ID');
+                document.getElementById('last-update').innerText = "Live / Sinkron";
                 
-                // Setelah data didapat, buat daftar bulan untuk dropdown
                 populateMonthDropdown();
                 processData(); 
 
             } catch (error) {
-                document.getElementById('leaderboard-body').innerHTML = `<tr><td colspan="4" class="text-center py-10 text-red-400">Gagal terhubung ke Database: ${error.message}</td></tr>`;
+                document.getElementById('leaderboard-body').innerHTML = `<tr><td colspan="4" class="text-center py-16 text-red-400 font-medium bg-red-900/10">Gagal terhubung ke Server Database: ${error.message}</td></tr>`;
+                document.getElementById('last-update').innerText = "Koneksi Terputus";
+                document.querySelector('.animate-ping').classList.remove('bg-blue-400');
+                document.querySelector('.animate-ping').classList.add('bg-red-400');
             }
         }
 
-        // Fungsi Cerdas: Membuat daftar bulan yang tersedia dari Database
         function populateMonthDropdown() {
             const select = document.getElementById('time-filter');
             const uniqueMonths = new Set();
             const monthNames = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
 
-            // Kumpulkan bulan unik dari data lari
             globalRawData.forEach(act => {
                 const d = new Date(act.date);
-                // Format jadi YYYY-MM untuk kemudahan sorting (misal: "2026-04")
                 const monthStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
                 uniqueMonths.add(monthStr);
             });
 
-            // Urutkan dari bulan terbaru ke terlama
             const sortedMonths = Array.from(uniqueMonths).sort().reverse();
-            select.innerHTML = ''; // Bersihkan tulisan "Memuat..."
+            select.innerHTML = ''; 
 
             if (sortedMonths.length === 0) {
                 const option = document.createElement('option');
@@ -133,7 +182,6 @@
                 return;
             }
 
-            // Masukkan bulan-bulan yang ditemukan ke dalam dropdown
             sortedMonths.forEach(ym => {
                 const [year, month] = ym.split('-');
                 const label = `${monthNames[parseInt(month) - 1]} ${year}`;
@@ -144,7 +192,6 @@
             });
         }
 
-        // Fungsi untuk memproses, menyaring, dan menampilkan data
         function processData() {
             const selectedMonthValue = document.getElementById('time-filter').value;
             const selectedMonthText = document.getElementById('time-filter').options[document.getElementById('time-filter').selectedIndex]?.text || "Periode";
@@ -152,7 +199,6 @@
             
             document.getElementById('period-label').innerText = selectedMonthText;
 
-            // 1. FILTERING (Hanya ambil data lari pada bulan yang dipilih di dropdown)
             let filteredActivities = globalRawData.filter(activity => {
                 if (!selectedMonthValue) return false;
                 const d = new Date(activity.date);
@@ -160,7 +206,6 @@
                 return actMonthStr === selectedMonthValue;
             });
 
-            // 2. AGREGASI (Menjumlahkan jarak pelari yang sama)
             let leaderboard = {};
             let totalOverallDistance = 0;
 
@@ -173,47 +218,51 @@
                 totalOverallDistance += act.distance;
             });
 
-            // 3. SORTING (Dari jarak terjauh) & Pembatasan Tampilan
             const sortedRunners = Object.keys(leaderboard)
                 .map(key => leaderboard[key])
                 .sort((a, b) => b.distance - a.distance)
                 .slice(0, limit);
 
-            // Update Statistik Atas
+            // Animasi angka (Opsional tapi keren)
             document.getElementById('stat-runners').innerText = sortedRunners.length;
-            document.getElementById('stat-distance').innerText = totalOverallDistance.toFixed(1) + " km";
+            document.getElementById('stat-distance').innerHTML = `${totalOverallDistance.toFixed(1)} <span class="text-lg text-yellow-500">km</span>`;
 
-            // 4. RENDER TABEL
             const tbody = document.getElementById('leaderboard-body');
             tbody.innerHTML = '';
 
             if (sortedRunners.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="4" class="text-center py-12 text-gray-500">Tidak ada aktivitas lari pada periode ini.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="4" class="text-center py-16 text-gray-400 italic">Mulai berlari dan jadilah yang pertama di bulan ini!</td></tr>`;
                 return;
             }
 
             sortedRunners.forEach((runner, index) => {
                 let rank = index + 1;
-                let rankVisual = `<span class="text-gray-400 font-bold">${rank}</span>`;
+                let rankVisual = `<span class="text-gray-400 font-black text-lg">${rank}</span>`;
                 
-                if (rank === 1) rankVisual = `<span class="text-xl" title="Juara 1">🥇</span>`;
-                if (rank === 2) rankVisual = `<span class="text-xl" title="Juara 2">🥈</span>`;
-                if (rank === 3) rankVisual = `<span class="text-xl" title="Juara 3">🥉</span>`;
+                // Styling Juara 1, 2, 3 dengan efek shadow bersinar
+                if (rank === 1) rankVisual = `<div class="bg-yellow-400/20 text-yellow-400 w-10 h-10 rounded-full flex items-center justify-center mx-auto shadow-[0_0_15px_rgba(250,204,21,0.5)]"><span class="text-2xl" title="Juara 1">🥇</span></div>`;
+                if (rank === 2) rankVisual = `<div class="bg-gray-300/20 text-gray-300 w-10 h-10 rounded-full flex items-center justify-center mx-auto shadow-[0_0_15px_rgba(209,213,219,0.3)]"><span class="text-2xl" title="Juara 2">🥈</span></div>`;
+                if (rank === 3) rankVisual = `<div class="bg-orange-400/20 text-orange-400 w-10 h-10 rounded-full flex items-center justify-center mx-auto shadow-[0_0_15px_rgba(251,146,60,0.3)]"><span class="text-2xl" title="Juara 3">🥉</span></div>`;
+
+                // Hitung Delay animasi per baris agar efek jatuhnya halus (0.05 detik bedanya tiap baris)
+                let delay = index * 0.05;
 
                 tbody.innerHTML += `
-                    <tr class="hover:bg-gray-700/50 transition-colors">
+                    <tr class="fade-in-row hover:bg-white/5 transition-colors duration-300" style="animation-delay: ${delay}s">
                         <td class="px-6 py-4 text-center">${rankVisual}</td>
-                        <td class="px-6 py-4 font-medium text-gray-100">${runner.name}</td>
+                        <td class="px-6 py-4 font-bold text-gray-100 text-base tracking-wide">${runner.name}</td>
                         <td class="px-6 py-4 text-right">
-                            <span class="text-blue-400 font-bold tracking-wide text-lg">${runner.distance.toFixed(2)}</span>
+                            <span class="text-blue-400 font-black tracking-wider text-xl">${runner.distance.toFixed(2)}</span>
                         </td>
-                        <td class="px-6 py-4 text-center text-gray-400">${runner.runs}x</td>
+                        <td class="px-6 py-4 text-center text-gray-400 font-medium">
+                            <span class="bg-gray-800 border border-gray-600 px-3 py-1 rounded-full text-xs">${runner.runs}x Lari</span>
+                        </td>
                     </tr>
                 `;
             });
         }
 
-        // Panggil fungsi pengambilan data pertama kali web dibuka
+        // Eksekusi
         fetchStravaData();
     </script>
 </body>
