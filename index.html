@@ -37,12 +37,9 @@
 
         <div class="bg-gray-800 p-4 rounded-xl mb-6 flex flex-wrap gap-4 items-center border border-gray-700 shadow-lg">
             <div class="flex items-center gap-3">
-                <label class="text-sm font-medium text-gray-400">Periode:</label>
-                <select id="time-filter" class="bg-gray-700 border border-gray-600 text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2 outline-none cursor-pointer">
-                    <option value="harian">Hari Ini</option>
-                    <option value="mingguan">7 Hari Terakhir</option>
-                    <option value="bulanan" selected>Bulan Ini</option>
-                    <option value="bulan_lalu">Bulan Lalu</option>
+                <label class="text-sm font-medium text-gray-400">Pilih Periode:</label>
+                <select id="time-filter" class="bg-gray-700 border border-gray-600 text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2 outline-none cursor-pointer min-w-[150px]">
+                    <option value="">Memuat periode...</option>
                 </select>
             </div>
             <div class="flex items-center gap-3">
@@ -61,7 +58,7 @@
         <div class="bg-gray-800 rounded-xl overflow-hidden border border-gray-700 shadow-xl">
             <div class="bg-gray-850 px-6 py-4 border-b border-gray-700 flex justify-between items-center">
                 <h2 class="text-lg font-bold text-white uppercase tracking-wider">Klasemen Akhir</h2>
-                <span id="period-label" class="text-xs font-bold px-2 py-1 bg-blue-900/80 text-blue-200 rounded uppercase">Bulan Ini</span>
+                <span id="period-label" class="text-xs font-bold px-2 py-1 bg-blue-900/80 text-blue-200 rounded uppercase">Memuat...</span>
             </div>
             <div class="overflow-x-auto">
                 <table class="w-full text-sm text-left">
@@ -74,7 +71,7 @@
                         </tr>
                     </thead>
                     <tbody id="leaderboard-body" class="divide-y divide-gray-700/50">
-                        <tr><td colspan="4" class="text-center py-12 text-gray-500">Mengambil data dari Google Sheets...</td></tr>
+                        <tr><td colspan="4" class="text-center py-12 text-gray-500">Mengambil data lari...</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -82,7 +79,7 @@
     </div>
 
     <script>
-        // MASUKKAN URL GOOGLE APPS SCRIPT SPREADSHEET (DATABASE) ANDA DI SINI
+        // MASUKKAN KEMBALI URL GOOGLE APPS SCRIPT SPREADSHEET (DATABASE) ANDA DI SINI
         const API_URL = 'https://script.google.com/macros/s/AKfycbzRYGypiA-GSOwv62s_u6DjPfm30xGy4zBMI1dXe_9QI3RvbyYQG8WeE1STsHbrYWJ8/exec';
         
         let globalRawData = []; 
@@ -90,6 +87,7 @@
         document.getElementById('time-filter').addEventListener('change', processData);
         document.getElementById('limit-filter').addEventListener('change', processData);
 
+        // Fungsi untuk mengambil data dari API Apps Script
         async function fetchStravaData() {
             try {
                 const response = await fetch(API_URL);
@@ -98,47 +96,71 @@
                 if (result.status === "error") throw new Error(result.message);
                 
                 globalRawData = result.data;
-                document.getElementById('last-update').innerText = "Data Ter-update";
+                document.getElementById('last-update').innerText = "Data Ter-update: " + new Date().toLocaleTimeString('id-ID');
+                
+                // Setelah data didapat, buat daftar bulan untuk dropdown
+                populateMonthDropdown();
                 processData(); 
+
             } catch (error) {
                 document.getElementById('leaderboard-body').innerHTML = `<tr><td colspan="4" class="text-center py-10 text-red-400">Gagal terhubung ke Database: ${error.message}</td></tr>`;
             }
         }
 
-        function processData() {
-            const timeFilter = document.getElementById('time-filter').value;
-            const limit = parseInt(document.getElementById('limit-filter').value);
-            const now = new Date();
-            
-            const labels = { 
-                'harian': 'Hari Ini', 
-                'mingguan': '7 Hari Terakhir', 
-                'bulanan': 'Bulan Ini',
-                'bulan_lalu': 'Bulan Lalu'
-            };
-            document.getElementById('period-label').innerText = labels[timeFilter];
+        // Fungsi Cerdas: Membuat daftar bulan yang tersedia dari Database
+        function populateMonthDropdown() {
+            const select = document.getElementById('time-filter');
+            const uniqueMonths = new Set();
+            const monthNames = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
 
-            let filteredActivities = globalRawData.filter(activity => {
-                const actDate = new Date(activity.date);
-                if (timeFilter === 'harian') {
-                    return actDate.toDateString() === now.toDateString();
-                } else if (timeFilter === 'mingguan') {
-                    const sevenDaysAgo = new Date(now.getTime() - (7 * 24 * 60 * 60 * 1000));
-                    return actDate >= sevenDaysAgo;
-                } else if (timeFilter === 'bulanan') {
-                    return actDate.getMonth() === now.getMonth() && actDate.getFullYear() === now.getFullYear();
-                } else if (timeFilter === 'bulan_lalu') {
-                    let lastMonth = now.getMonth() - 1;
-                    let year = now.getFullYear();
-                    if (lastMonth < 0) { 
-                        lastMonth = 11; 
-                        year -= 1; 
-                    }
-                    return actDate.getMonth() === lastMonth && actDate.getFullYear() === year;
-                }
-                return false; 
+            // Kumpulkan bulan unik dari data lari
+            globalRawData.forEach(act => {
+                const d = new Date(act.date);
+                // Format jadi YYYY-MM untuk kemudahan sorting (misal: "2026-04")
+                const monthStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+                uniqueMonths.add(monthStr);
             });
 
+            // Urutkan dari bulan terbaru ke terlama
+            const sortedMonths = Array.from(uniqueMonths).sort().reverse();
+            select.innerHTML = ''; // Bersihkan tulisan "Memuat..."
+
+            if (sortedMonths.length === 0) {
+                const option = document.createElement('option');
+                option.value = "";
+                option.text = "Belum Ada Data";
+                select.appendChild(option);
+                return;
+            }
+
+            // Masukkan bulan-bulan yang ditemukan ke dalam dropdown
+            sortedMonths.forEach(ym => {
+                const [year, month] = ym.split('-');
+                const label = `${monthNames[parseInt(month) - 1]} ${year}`;
+                const option = document.createElement('option');
+                option.value = ym;
+                option.text = label;
+                select.appendChild(option);
+            });
+        }
+
+        // Fungsi untuk memproses, menyaring, dan menampilkan data
+        function processData() {
+            const selectedMonthValue = document.getElementById('time-filter').value;
+            const selectedMonthText = document.getElementById('time-filter').options[document.getElementById('time-filter').selectedIndex]?.text || "Periode";
+            const limit = parseInt(document.getElementById('limit-filter').value);
+            
+            document.getElementById('period-label').innerText = selectedMonthText;
+
+            // 1. FILTERING (Hanya ambil data lari pada bulan yang dipilih di dropdown)
+            let filteredActivities = globalRawData.filter(activity => {
+                if (!selectedMonthValue) return false;
+                const d = new Date(activity.date);
+                const actMonthStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+                return actMonthStr === selectedMonthValue;
+            });
+
+            // 2. AGREGASI (Menjumlahkan jarak pelari yang sama)
             let leaderboard = {};
             let totalOverallDistance = 0;
 
@@ -151,19 +173,22 @@
                 totalOverallDistance += act.distance;
             });
 
+            // 3. SORTING (Dari jarak terjauh) & Pembatasan Tampilan
             const sortedRunners = Object.keys(leaderboard)
                 .map(key => leaderboard[key])
                 .sort((a, b) => b.distance - a.distance)
                 .slice(0, limit);
 
+            // Update Statistik Atas
             document.getElementById('stat-runners').innerText = sortedRunners.length;
             document.getElementById('stat-distance').innerText = totalOverallDistance.toFixed(1) + " km";
 
+            // 4. RENDER TABEL
             const tbody = document.getElementById('leaderboard-body');
             tbody.innerHTML = '';
 
             if (sortedRunners.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="4" class="text-center py-12 text-gray-500">Tidak ada aktivitas pada periode ini.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="4" class="text-center py-12 text-gray-500">Tidak ada aktivitas lari pada periode ini.</td></tr>`;
                 return;
             }
 
@@ -188,6 +213,7 @@
             });
         }
 
+        // Panggil fungsi pengambilan data pertama kali web dibuka
         fetchStravaData();
     </script>
 </body>
