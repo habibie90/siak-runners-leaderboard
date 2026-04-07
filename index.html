@@ -24,8 +24,7 @@
                 </div>
                 <div class="flex flex-col justify-center">
                     <h1 class="text-2xl md:text-4xl font-extrabold tracking-wider uppercase leading-tight drop-shadow-md">
-                        LEADERBOARD<br />
-                        <span class="text-shine">SIAK RUNNERS</span>
+                        LEADERBOARD<br /><span class="text-shine">SIAK RUNNERS</span>
                     </h1>
                 </div>
             </div>
@@ -52,11 +51,8 @@
                 </select>
             </div>
             <div class="flex items-center gap-2">
-                <span class="relative flex h-3 w-3">
-                  <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
-                  <span class="relative inline-flex rounded-full h-3 w-3 bg-blue-500"></span>
-                </span>
-                <span id="last-update" class="text-xs font-medium text-blue-200">Menarik data live dari Strava...</span>
+                <span class="relative flex h-3 w-3"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span><span class="relative inline-flex rounded-full h-3 w-3 bg-blue-500"></span></span>
+                <span id="last-update" class="text-xs font-medium text-blue-200">Menghubungkan ke Server...</span>
             </div>
         </div>
 
@@ -64,38 +60,34 @@
             <div class="bg-gray-800/50 px-6 py-5 border-b border-gray-700/50 flex justify-between items-center">
                 <h2 class="text-xl font-black text-white uppercase tracking-widest flex items-center gap-2">
                     <svg class="w-6 h-6 text-yellow-400" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>
-                    Klasemen Terkini
+                    Klasemen Resmi
                 </h2>
-                <span class="text-xs font-extrabold px-3 py-1.5 bg-blue-600 text-white rounded-lg uppercase shadow-lg shadow-blue-500/30">Live Data</span>
+                <span id="period-label" class="text-xs font-extrabold px-3 py-1.5 bg-blue-600 text-white rounded-lg uppercase shadow-lg shadow-blue-500/30">Bulan Ini</span>
             </div>
             <div class="overflow-x-auto">
                 <table class="w-full text-sm text-left">
                     <thead class="bg-gray-900/40 text-gray-400 uppercase text-xs tracking-widest border-b border-gray-700/50">
-                        <tr>
-                            <th class="px-6 py-5 text-center w-20 font-bold">Pos</th>
-                            <th class="px-6 py-5 font-bold">Nama Pelari</th>
-                            <th class="px-6 py-5 text-right font-bold">Total Jarak</th>
-                            <th class="px-6 py-5 text-center font-bold">Aktivitas</th>
-                        </tr>
+                        <tr><th class="px-6 py-5 text-center w-20 font-bold">Pos</th><th class="px-6 py-5 font-bold">Nama Pelari</th><th class="px-6 py-5 text-right font-bold">Total Jarak</th><th class="px-6 py-5 text-center font-bold">Aktivitas</th></tr>
                     </thead>
                     <tbody id="leaderboard-body" class="divide-y divide-gray-700/30">
-                        <tr><td colspan="4" class="text-center py-16 text-gray-400 font-medium">Sedang mengambil 200 aktivitas terakhir...</td></tr>
+                        <tr><td colspan="4" class="text-center py-16 text-gray-400 font-medium">Memuat data akurat...</td></tr>
                     </tbody>
                 </table>
-            </div>
-            <div class="bg-gray-800/80 px-6 py-3 border-t border-gray-700/50 text-center text-xs text-gray-500">
-                Menampilkan akumulasi jarak dari 200 aktivitas lari terbaru di Klub Strava.
             </div>
         </div>
     </div>
 
     <script>
-        // MASUKKAN URL GOOGLE APPS SCRIPT YANG BARU DI BAWAH INI
-        const API_URL = 'https://script.google.com/macros/s/AKfycbzA3qXmb1OAZY5m_aK-BINh1MAyiBozX7Nx_Qsc0MjU3KVzjOj2GTdF3kNEYAdIEBye/exec';
+        // MASUKKAN URL GOOGLE APPS SCRIPT ANDA DI BAWAH INI
+        const API_URL = 'https://script.google.com/macros/s/AKfycbwGfmYzLb508lOj1pS-KnNvUFeno2nUrE0uE2nvLBx6QXY5_YJQ9J3uz04dPW7r2NLV/exec';
         
         let globalRawData = []; 
+        document.getElementById('limit-filter').addEventListener('change', renderTable);
 
-        document.getElementById('limit-filter').addEventListener('change', processData);
+        // Set Label Bulan
+        const months = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+        const now = new Date();
+        document.getElementById('period-label').innerText = `${months[now.getMonth()]} ${now.getFullYear()}`;
 
         async function fetchStravaData() {
             try {
@@ -104,49 +96,37 @@
                 
                 if (result.status === "error") throw new Error(result.message);
                 
-                globalRawData = result.data;
+                globalRawData = result.data; // Data sudah dihitung 100% akurat oleh Apps Script
                 document.getElementById('last-update').innerText = "Live / Sinkron ( " + new Date().toLocaleTimeString('id-ID') + " )";
-                processData(); 
+                renderTable(); 
 
             } catch (error) {
-                document.getElementById('leaderboard-body').innerHTML = `<tr><td colspan="4" class="text-center py-16 text-red-400 font-medium bg-red-900/10">Gagal terhubung ke Strava: ${error.message}</td></tr>`;
+                document.getElementById('leaderboard-body').innerHTML = `<tr><td colspan="4" class="text-center py-16 text-red-400 font-medium bg-red-900/10">Gagal terhubung ke Server API: ${error.message}</td></tr>`;
                 document.getElementById('last-update').innerText = "Koneksi Terputus";
                 document.querySelector('.animate-ping').classList.remove('bg-blue-400');
                 document.querySelector('.animate-ping').classList.add('bg-red-400');
             }
         }
 
-        function processData() {
+        function renderTable() {
             const limit = parseInt(document.getElementById('limit-filter').value);
-            let leaderboard = {};
-            let totalOverallDistance = 0;
+            const limitedData = globalRawData.slice(0, limit);
+            
+            let totalDistance = 0;
+            globalRawData.forEach(r => totalDistance += r.distance);
 
-            globalRawData.forEach(act => {
-                if (!leaderboard[act.name]) {
-                    leaderboard[act.name] = { name: act.name, distance: 0, runs: 0 };
-                }
-                leaderboard[act.name].distance += act.distance;
-                leaderboard[act.name].runs += 1;
-                totalOverallDistance += act.distance;
-            });
-
-            const sortedRunners = Object.keys(leaderboard)
-                .map(key => leaderboard[key])
-                .sort((a, b) => b.distance - a.distance)
-                .slice(0, limit);
-
-            document.getElementById('stat-runners').innerText = sortedRunners.length;
-            document.getElementById('stat-distance').innerHTML = `${totalOverallDistance.toFixed(1)} <span class="text-lg text-yellow-500">km</span>`;
+            document.getElementById('stat-runners').innerText = globalRawData.length;
+            document.getElementById('stat-distance').innerHTML = `${totalDistance.toFixed(1)} <span class="text-lg text-yellow-500">km</span>`;
 
             const tbody = document.getElementById('leaderboard-body');
             tbody.innerHTML = '';
 
-            if (sortedRunners.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="4" class="text-center py-16 text-gray-400 italic">Belum ada data lari.</td></tr>`;
+            if (limitedData.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" class="text-center py-16 text-gray-400 italic">Belum ada aktivitas lari bulan ini.</td></tr>`;
                 return;
             }
 
-            sortedRunners.forEach((runner, index) => {
+            limitedData.forEach((runner, index) => {
                 let rank = index + 1;
                 let rankVisual = `<span class="text-gray-400 font-black text-lg">${rank}</span>`;
                 
@@ -165,6 +145,7 @@
                     </tr>`;
             });
         }
+        
         fetchStravaData();
     </script>
 </body>
