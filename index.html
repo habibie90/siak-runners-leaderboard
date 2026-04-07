@@ -15,7 +15,7 @@
         .fade-in-row { animation: fadeInUp 0.5s ease forwards; opacity: 0; }
     </style>
 </head>
-<body class="animated-bg text-gray-200 p-4 md:p-8 font-sans antialiased">
+<body class="animated-bg text-gray-200 p-4 md:p-8 font-sans antialiased selection:bg-blue-500 selection:text-white">
     <div class="max-w-5xl mx-auto">
         <div class="glass-panel rounded-2xl mb-8 flex flex-col md:flex-row justify-between items-center p-6 gap-6 transition-all duration-300 hover:shadow-blue-900/20 hover:shadow-2xl">
             <div class="flex flex-row items-center gap-5 w-full md:w-auto">
@@ -24,10 +24,12 @@
                 </div>
                 <div class="flex flex-col justify-center">
                     <h1 class="text-2xl md:text-4xl font-extrabold tracking-wider uppercase leading-tight drop-shadow-md">
-                        LEADERBOARD<br /><span class="text-shine">SIAK RUNNERS</span>
+                        LEADERBOARD<br />
+                        <span class="text-shine">SIAK RUNNERS</span>
                     </h1>
                 </div>
             </div>
+            
             <div class="flex gap-8 w-full md:w-auto justify-start md:justify-end border-t md:border-t-0 border-gray-600 pt-4 md:pt-0">
                 <div class="text-left md:text-right transform transition hover:scale-105">
                     <p class="text-xs text-blue-300 uppercase font-bold tracking-wider mb-1">Total Pelari</p>
@@ -40,114 +42,122 @@
             </div>
         </div>
 
-        <div class="glass-panel p-5 rounded-2xl mb-6 flex flex-wrap gap-5 items-center">
-            <div class="flex items-center gap-3">
-                <label class="text-sm font-bold text-gray-300 uppercase tracking-wide">Pilih Periode:</label>
-                <select id="time-filter" class="bg-gray-800/80 border border-blue-500/30 text-white text-sm rounded-xl focus:ring-blue-500 focus:border-blue-500 block p-2.5 outline-none cursor-pointer min-w-[160px] transition hover:bg-gray-700/80">
-                    <option value="">Memuat periode...</option>
-                </select>
-            </div>
+        <div class="glass-panel p-5 rounded-2xl mb-6 flex flex-wrap gap-5 items-center justify-between">
             <div class="flex items-center gap-3">
                 <label class="text-sm font-bold text-gray-300 uppercase tracking-wide">Tampilkan:</label>
                 <select id="limit-filter" class="bg-gray-800/80 border border-blue-500/30 text-white text-sm rounded-xl focus:ring-blue-500 focus:border-blue-500 block p-2.5 outline-none cursor-pointer transition hover:bg-gray-700/80">
                     <option value="10">Top 10</option>
                     <option value="30" selected>Top 30</option>
-                    <option value="100">Semua</option>
+                    <option value="100">Semua Pelari</option>
                 </select>
             </div>
-            <div class="ml-auto flex items-center gap-2">
-                <span class="relative flex h-3 w-3"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span><span class="relative inline-flex rounded-full h-3 w-3 bg-blue-500"></span></span>
-                <span id="last-update" class="text-xs font-medium text-blue-200">Menghubungkan ke Database...</span>
+            <div class="flex items-center gap-2">
+                <span class="relative flex h-3 w-3">
+                  <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+                  <span class="relative inline-flex rounded-full h-3 w-3 bg-blue-500"></span>
+                </span>
+                <span id="last-update" class="text-xs font-medium text-blue-200">Menarik data live dari Strava...</span>
             </div>
         </div>
 
         <div class="glass-panel rounded-2xl overflow-hidden shadow-2xl">
             <div class="bg-gray-800/50 px-6 py-5 border-b border-gray-700/50 flex justify-between items-center">
-                <h2 class="text-xl font-black text-white uppercase tracking-widest flex items-center gap-2">Klasemen Resmi</h2>
-                <span id="period-label" class="text-xs font-extrabold px-3 py-1.5 bg-blue-600 text-white rounded-lg uppercase shadow-lg shadow-blue-500/30">Memuat...</span>
+                <h2 class="text-xl font-black text-white uppercase tracking-widest flex items-center gap-2">
+                    <svg class="w-6 h-6 text-yellow-400" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>
+                    Klasemen Terkini
+                </h2>
+                <span class="text-xs font-extrabold px-3 py-1.5 bg-blue-600 text-white rounded-lg uppercase shadow-lg shadow-blue-500/30">Live Data</span>
             </div>
             <div class="overflow-x-auto">
-                <table class="w-full text-sm text-left"><thead class="bg-gray-900/40 text-gray-400 uppercase text-xs tracking-widest border-b border-gray-700/50"><tr><th class="px-6 py-5 text-center w-20 font-bold">Pos</th><th class="px-6 py-5 font-bold">Nama Pelari</th><th class="px-6 py-5 text-right font-bold">Total Jarak</th><th class="px-6 py-5 text-center font-bold">Aktivitas</th></tr></thead><tbody id="leaderboard-body" class="divide-y divide-gray-700/30"><tr><td colspan="4" class="text-center py-16 text-gray-400 font-medium">Sedang mengambil log lari...</td></tr></tbody></table>
+                <table class="w-full text-sm text-left">
+                    <thead class="bg-gray-900/40 text-gray-400 uppercase text-xs tracking-widest border-b border-gray-700/50">
+                        <tr>
+                            <th class="px-6 py-5 text-center w-20 font-bold">Pos</th>
+                            <th class="px-6 py-5 font-bold">Nama Pelari</th>
+                            <th class="px-6 py-5 text-right font-bold">Total Jarak</th>
+                            <th class="px-6 py-5 text-center font-bold">Aktivitas</th>
+                        </tr>
+                    </thead>
+                    <tbody id="leaderboard-body" class="divide-y divide-gray-700/30">
+                        <tr><td colspan="4" class="text-center py-16 text-gray-400 font-medium">Sedang mengambil 200 aktivitas terakhir...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="bg-gray-800/80 px-6 py-3 border-t border-gray-700/50 text-center text-xs text-gray-500">
+                Menampilkan akumulasi jarak dari 200 aktivitas lari terbaru di Klub Strava.
             </div>
         </div>
     </div>
 
     <script>
-        // MASUKKAN URL GOOGLE APPS SCRIPT ANDA DI ANTARA TANDA KUTIP DI BAWAH INI
-        const API_URL = 'https://script.google.com/macros/s/AKfycbzN8n29ZwUQPV2JZfSVlb9E3aXaa4q3JWdw8_czHgxOcTZYnZNqa6MAvwatZuSKoyvwzg/exec';
+        // MASUKKAN URL GOOGLE APPS SCRIPT YANG BARU DI BAWAH INI
+        const API_URL = 'https://script.google.com/macros/s/AKfycbzA3qXmb1OAZY5m_aK-BINh1MAyiBozX7Nx_Qsc0MjU3KVzjOj2GTdF3kNEYAdIEBye/exec';
         
         let globalRawData = []; 
-        document.getElementById('time-filter').addEventListener('change', processData);
+
         document.getElementById('limit-filter').addEventListener('change', processData);
 
         async function fetchStravaData() {
             try {
                 const response = await fetch(API_URL);
                 const result = await response.json();
+                
                 if (result.status === "error") throw new Error(result.message);
+                
                 globalRawData = result.data;
-                document.getElementById('last-update').innerText = "Live / Sinkron";
-                populateMonthDropdown();
+                document.getElementById('last-update').innerText = "Live / Sinkron ( " + new Date().toLocaleTimeString('id-ID') + " )";
                 processData(); 
+
             } catch (error) {
-                document.getElementById('leaderboard-body').innerHTML = `<tr><td colspan="4" class="text-center py-16 text-red-400 font-medium bg-red-900/10">Gagal terhubung ke Server Database: ${error.message}</td></tr>`;
+                document.getElementById('leaderboard-body').innerHTML = `<tr><td colspan="4" class="text-center py-16 text-red-400 font-medium bg-red-900/10">Gagal terhubung ke Strava: ${error.message}</td></tr>`;
+                document.getElementById('last-update').innerText = "Koneksi Terputus";
+                document.querySelector('.animate-ping').classList.remove('bg-blue-400');
+                document.querySelector('.animate-ping').classList.add('bg-red-400');
             }
         }
 
-        function populateMonthDropdown() {
-            const select = document.getElementById('time-filter');
-            const uniqueMonths = new Set();
-            const monthNames = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+        function processData() {
+            const limit = parseInt(document.getElementById('limit-filter').value);
+            let leaderboard = {};
+            let totalOverallDistance = 0;
 
             globalRawData.forEach(act => {
-                const d = new Date(act.date);
-                const monthStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-                uniqueMonths.add(monthStr);
+                if (!leaderboard[act.name]) {
+                    leaderboard[act.name] = { name: act.name, distance: 0, runs: 0 };
+                }
+                leaderboard[act.name].distance += act.distance;
+                leaderboard[act.name].runs += 1;
+                totalOverallDistance += act.distance;
             });
 
-            const sortedMonths = Array.from(uniqueMonths).sort().reverse();
-            select.innerHTML = ''; 
-            if (sortedMonths.length === 0) { select.appendChild(new Option("Belum Ada Data", "")); return; }
-            sortedMonths.forEach(ym => {
-                const [year, month] = ym.split('-');
-                select.appendChild(new Option(`${monthNames[parseInt(month) - 1]} ${year}`, ym));
-            });
-        }
+            const sortedRunners = Object.keys(leaderboard)
+                .map(key => leaderboard[key])
+                .sort((a, b) => b.distance - a.distance)
+                .slice(0, limit);
 
-        function processData() {
-            const selectedMonthValue = document.getElementById('time-filter').value;
-            const selectedMonthText = document.getElementById('time-filter').options[document.getElementById('time-filter').selectedIndex]?.text || "Periode";
-            const limit = parseInt(document.getElementById('limit-filter').value);
-            document.getElementById('period-label').innerText = selectedMonthText;
-
-            let filteredActivities = globalRawData.filter(activity => {
-                if (!selectedMonthValue) return false;
-                const d = new Date(activity.date);
-                return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}` === selectedMonthValue;
-            });
-
-            let leaderboard = {}; let totalOverallDistance = 0;
-            filteredActivities.forEach(act => {
-                if (!leaderboard[act.name]) leaderboard[act.name] = { name: act.name, distance: 0, runs: 0 };
-                leaderboard[act.name].distance += act.distance; leaderboard[act.name].runs += 1; totalOverallDistance += act.distance;
-            });
-
-            const sortedRunners = Object.keys(leaderboard).map(key => leaderboard[key]).sort((a, b) => b.distance - a.distance).slice(0, limit);
             document.getElementById('stat-runners').innerText = sortedRunners.length;
             document.getElementById('stat-distance').innerHTML = `${totalOverallDistance.toFixed(1)} <span class="text-lg text-yellow-500">km</span>`;
 
-            const tbody = document.getElementById('leaderboard-body'); tbody.innerHTML = '';
-            if (sortedRunners.length === 0) { tbody.innerHTML = `<tr><td colspan="4" class="text-center py-16 text-gray-400 italic">Mulai berlari dan jadilah yang pertama di bulan ini!</td></tr>`; return; }
+            const tbody = document.getElementById('leaderboard-body');
+            tbody.innerHTML = '';
+
+            if (sortedRunners.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" class="text-center py-16 text-gray-400 italic">Belum ada data lari.</td></tr>`;
+                return;
+            }
 
             sortedRunners.forEach((runner, index) => {
                 let rank = index + 1;
                 let rankVisual = `<span class="text-gray-400 font-black text-lg">${rank}</span>`;
+                
                 if (rank === 1) rankVisual = `<div class="bg-yellow-400/20 text-yellow-400 w-10 h-10 rounded-full flex items-center justify-center mx-auto shadow-[0_0_15px_rgba(250,204,21,0.5)]"><span class="text-2xl" title="Juara 1">🥇</span></div>`;
                 if (rank === 2) rankVisual = `<div class="bg-gray-300/20 text-gray-300 w-10 h-10 rounded-full flex items-center justify-center mx-auto shadow-[0_0_15px_rgba(209,213,219,0.3)]"><span class="text-2xl" title="Juara 2">🥈</span></div>`;
                 if (rank === 3) rankVisual = `<div class="bg-orange-400/20 text-orange-400 w-10 h-10 rounded-full flex items-center justify-center mx-auto shadow-[0_0_15px_rgba(251,146,60,0.3)]"><span class="text-2xl" title="Juara 3">🥉</span></div>`;
 
+                let delay = index * 0.05;
+
                 tbody.innerHTML += `
-                    <tr class="fade-in-row hover:bg-white/5 transition-colors duration-300" style="animation-delay: ${index * 0.05}s">
+                    <tr class="fade-in-row hover:bg-white/5 transition-colors duration-300" style="animation-delay: ${delay}s">
                         <td class="px-6 py-4 text-center">${rankVisual}</td>
                         <td class="px-6 py-4 font-bold text-gray-100 text-base tracking-wide">${runner.name}</td>
                         <td class="px-6 py-4 text-right"><span class="text-blue-400 font-black tracking-wider text-xl">${runner.distance.toFixed(2)}</span></td>
